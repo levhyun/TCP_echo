@@ -7,6 +7,7 @@ using namespace std;
 int main() {
 	client c;
 	int port;
+	char ip[20];
 
 	cout << "PORT 번호를 입력하세요 : ";
 	cin >> port;
@@ -14,7 +15,9 @@ int main() {
 
 	c.winsock_start();
 
-	c.socket_setting();
+	cout << "IP 주소를 입력하세요 : ";
+	cin >> ip;
+	c.socket_setting(ip);
 
 	c.connecting();
 

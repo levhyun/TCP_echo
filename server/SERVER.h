@@ -1,5 +1,7 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
+#pragma comment(lib, "ws2_32")
+
 #include <iostream>
 #include <string>
 #include <WinSock2.h>
@@ -27,7 +29,12 @@ class server {
 		char received[256];
 		int recv_length;
 
+		IN_ADDR ip_address = {0, };
+		char localHostName[MAX_PATH];
+		HOSTENT* ptr;
+
 		void port_setting(int port_num);
+		string get_IP();
 		void ShowErrorMessage(string message);
 		void winsock_start();
 		void socket_setting();
@@ -41,6 +48,35 @@ class server {
 void server::port_setting(int port_num) { // port 설정 함수
 	server_port = port_num;
 	cout << "※ 포트 설정 완료 ( PORT : " << port_num << " ) ※" << endl;
+}
+
+string server::get_IP() {
+	WSADATA wsa;
+	WSAStartup(MAKEWORD(2, 2), &wsa);
+
+	if (gethostname(localHostName, MAX_PATH) == SOCKET_ERROR) { // 로컬 호스트 이름 검색0
+		/*
+			gethostname([값을 받을 문자열 변수],[값을 받을 문자열 변수 크기]);
+
+			반환
+			- 성공 : 0
+			- 실패 : -1, SOCKET_ERROR
+		*/
+		return inet_ntoa(ip_address);
+	}
+
+	ptr = gethostbyname(localHostName); // 호스트 정보 검색
+
+	while (ptr && ptr->h_name) {
+		if (ptr->h_addrtype == PF_INET) {  // 호스트 주소 타입이 IPv4일때 참
+			memcpy(&ip_address, ptr->h_addr_list[0], ptr->h_length); // 메모리 복사
+			break;
+		}
+		ptr++;
+	}
+
+	WSACleanup();
+	return inet_ntoa(ip_address);
 }
 
 void server::ShowErrorMessage(string message) { // 오류 메세지 함수
@@ -99,9 +135,10 @@ void server::socket_setting() {
 		- 실패 : NULL
 	*/
 	server_address.sin_family = AF_INET;
-	cout << (SOCKADDR*)&server_address.sin_addr.s_addr << endl;
 	server_address.sin_addr.s_addr = htonl(INADDR_ANY); // 4바이트 정수를 네트워크 바이트 형식으로
 	// * INADDR_ANY : 서버의 IP주소를 자동으로 찾아서 대입하는 함수
+	// cout << &server_address.sin_addr << endl;
+	// cout << inet_ntoa(server_address.sin_addr) << endl;
 	server_address.sin_port = htons(server_port); // 2바이트 정수를 네트워크 바이트 형식으로
 
 	cout << "※ 소켓 설정 완료 ※" << endl;

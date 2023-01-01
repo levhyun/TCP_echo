@@ -1,4 +1,7 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+
+#pragma comment(lib, "ws2_32")
+
 #include<iostream>
 #include<string>
 #include<winsock2.h>
@@ -22,6 +25,7 @@ class client{
 			}
 		*/
 		int server_port;
+		char ip_address[20];
 		char received[256];
 		string sent;
 		int recv_length;
@@ -29,7 +33,7 @@ class client{
 		void port_setting(int port_num);
 		void ShowErrorMessage(string message);
 		void winsock_start();
-		void socket_setting();
+		void socket_setting(char addr[]);
 		void connecting();
 		int echo();
 		void client_end();
@@ -63,7 +67,7 @@ void client::winsock_start() {
 	}
 }
 
-void client::socket_setting() {
+void client::socket_setting(char addr[]) {
 	client_socket = socket(PF_INET, SOCK_STREAM, 0); // TCP 소켓 생성
 	/*
 		socket([통신 영역],[프로토콜 타입],[프로토콜 값]);
@@ -93,7 +97,7 @@ void client::socket_setting() {
 		- 실패 : NULL
 	*/
 	server_address.sin_family = AF_INET;
-	server_address.sin_addr.s_addr = inet_addr("192.168.35.212"); // 문자열IP를 네트워크 바이트 형식으로
+	server_address.sin_addr.s_addr = inet_addr(addr); // 문자열IP를 네트워크 바이트 
 	server_address.sin_port = htons(server_port); // 2바이트 정수를 네트워크 바이트 형식으로
 }
 
